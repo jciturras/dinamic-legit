@@ -1,0 +1,250 @@
+---
+title: "Data preparation"
+date: "`r format(Sys.time(), '%A %d %B %Y %X')`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float:
+        collapsed: false
+    toc_depth: 2
+    code_folding: "hide"
+editor_options:
+  chunk_output_type: console
+---
+
+```{r eval=FALSE, include=FALSE}
+rmarkdown::render(input = "production/prod_data-prep.Rmd",output_format = "html_document",output_dir = "production/");browseURL(url = "production/prod_data-prep.html")
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(warning = FALSE,message = FALSE, cache = TRUE,results = "hold")
+knitr::opts_knit$set(root.dir = "../")
+options(scipen=999)
+rm(list=ls())
+options(knitr.kable.NA = '')
+```
+
+**libraries**
+```{r}
+# install.packages("dataverse")
+library(dataverse)
+library(dplyr)
+library(sjlabelled)
+library(sjPlot)
+library(stargazer)
+```
+
+**download data from dataverse**
+```{r}
+Sys.setenv("DATAVERSE_SERVER" = "dataverse.harvard.edu")
+```
+
+```{r eval=FALSE, include=FALSE}
+get_dataset(dataset = "https://doi.org/10.7910/DVN/0KIRBJ")
+writeBin(get_file(file    = "ELSOC_W01_v3.10_R.tab", #Descarga y guardado local en .RData
+                  dataset = "https://doi.org/10.7910/DVN/0KIRBJ"),
+         "input/data/original/ELSOC_W01_v3.10.RData")
+```
+
+```{r eval=FALSE, include=FALSE}
+get_dataset(dataset = "https://doi.org/10.7910/DVN/JDJLPQ")
+
+writeBin(get_file(file    = "ELSOC_W02_v2.10_R.tab", #Descarga y guardado local en .RData
+                  dataset = "https://doi.org/10.7910/DVN/JDJLPQ"), 
+         "input/data/original/ELSOC_W02_v2.10_R.RData")
+```
+
+```{r eval=FALSE, include=FALSE}
+get_dataset(dataset = "https://doi.org/10.7910/DVN/H8OVMF")
+writeBin(get_file(file    = "ELSOC_W03_v1.10_Stata14.tab", #Descarga y guardado local en .RData
+                  dataset = "https://doi.org/10.7910/DVN/H8OVMF"), 
+         "input/data/original/ELSOC_W03.dta")
+```
+
+**load data**
+
+```{r}
+load("input/data/original/ELSOC_W01_v3.10.RData");   elsoc16<- elsoc_2016; remove(elsoc_2016)
+load("input/data/original/ELSOC_W02_v2.10_R.RData"); elsoc17<- elsoc_2017; remove(elsoc_2017)
+read_stata(path = "input/data/original/ELSOC_W03.dta") -> elsoc18
+load("input/data/original/ELSOC_W04_v1.00_R.RData"); elsoc19<- elsoc_2019; remove(elsoc_2019)
+```
+
+# wave 2016
+
+```{r}
+sjmisc::find_var(elsoc16,"Salario")
+sjmisc::find_var(elsoc16,"Las personas son")
+sjmisc::find_var(elsoc16,"Justicia")
+sjmisc::find_var(elsoc16,"Estatus")
+```
+
+```{r}
+elsoc16[elsoc16==-999] <- NA
+elsoc16[elsoc16==-888] <- NA
+w01 <- elsoc16 %>% select(idencuesta,
+                          "ess"=d01_01,
+                          "justpens" = d02_01,
+                          "justeduc" = d02_02,
+                          "justsalud" = d02_03,
+                          "mesfuerzo"= c18_09,
+                          "mtalento" = c18_10,
+                          "salperger"= d03_01,
+                          "salperobr"= d03_02,
+                          "saljusobr"= d04_02 ,
+                          "saljusger"= d04_01) %>% 
+  mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
+  mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+
+#---Brecha salarial percibida
+w01$gap_perc   <-  as.numeric(w01$salperger/w01$salperobr) # diferencia total
+w01$lngap_perc <-  as.numeric(log(w01$gap_perc))                 # diferencia log
+
+#---Brecha salarial justa
+w01$gap_just   <-  as.numeric(w01$saljusger/w01$saljusobr) # diferencia total
+w01$lngap_just <-  as.numeric(log(w01$gap_just))           # diferencia log
+# meritocracia promedio
+w01$pmerit <- as.numeric((w01$mesfuerzo+w01$mtalento)/2)
+```
+
+```{r}
+stargazer(w01,type = "text",digits = 1)
+```
+
+# wave 2017
+
+```{r}
+elsoc17[elsoc17==-999] <- NA
+elsoc17[elsoc17==-888] <- NA
+w02 <- elsoc17 %>% select(idencuesta,
+                          "ess"=d01_01,
+                          "justpens" = d02_01,
+                          "justeduc" = d02_02,
+                          "justsalud"= d02_03,
+                          "mesfuerzo"=c18_09,
+                          "mtalento" =c18_10,
+                          "salperger"= d03_01,
+                          "salperobr"= d03_02,
+                          "saljusobr"= d04_02 ,
+                          "saljusger"= d04_01) %>% 
+  mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
+  mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+
+#---Brecha salarial percibida
+w02$gap_perc   <-  as.numeric(w02$salperger/w02$salperobr) # diferencia total
+w02$lngap_perc <-  as.numeric(log(w02$gap_perc))                 # diferencia log
+
+#---Brecha salarial justa
+w02$gap_just   <-  as.numeric(w02$saljusger/w02$saljusobr) # diferencia total
+w02$lngap_just <-  as.numeric(log(w02$gap_just))                # diferencia log
+# meritocracia promedio
+w02$pmerit <- as.numeric((w02$mesfuerzo+w02$mtalento)/2)
+```
+
+```{r}
+stargazer(w02,type = "text",digits = 1)
+```
+
+# wave 2018
+
+```{r}
+elsoc18[elsoc18==-999] <- NA
+elsoc18[elsoc18==-888] <- NA
+w03 <- elsoc18 %>% select(idencuesta,
+                          "ess"=d01_01,
+                          "justpens" = d02_01,
+                          "justeduc" = d02_02,
+                          "justsalud"= d02_01,
+                          "mesfuerzo"= c18_09,
+                          "mtalento" = c18_10,
+                          "salperger"= d03_01,
+                          "salperobr"= d03_02,
+                          "saljusobr"= d04_02 ,
+                          "saljusger"= d04_01) %>% 
+  mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
+  mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+
+#---Brecha salarial percibida
+w03$gap_perc   <-  as.numeric(w03$salperger/w03$salperobr) # diferencia total
+w03$lngap_perc <-  as.numeric(log(w03$gap_perc))                 # diferencia log
+
+#---Brecha salarial justa
+w03$gap_just   <-  as.numeric(w03$saljusger/w03$saljusobr) # diferencia total
+w03$lngap_just <-  as.numeric(log(w03$gap_just))           # diferencia log
+# meritocracia promedio
+w03$pmerit <- as.numeric((w03$mesfuerzo+w03$mtalento)/2)
+```
+
+```{r}
+stargazer(w03,type = "text",digits = 1)
+```
+
+# wave 2019
+
+```{r}
+elsoc19[elsoc19==-999] <- NA
+elsoc19[elsoc19==-888] <- NA
+w04 <- elsoc19 %>% select(idencuesta,
+                          "ess"=d01_01,
+                          "justpens" = d02_01,
+                          "justeduc" = d02_02,
+                          "justsalud"= d02_01,
+                          "mesfuerzo"= c18_09,
+                          "mtalento" = c18_10,
+                          "salperger"= d03_01,
+                          "salperobr"= d03_02,
+                          "saljusobr"= d04_02 ,
+                          "saljusger"= d04_01) %>% 
+  mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
+  mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+
+#---Brecha salarial percibida
+w04$gap_perc   <-  as.numeric(w04$salperger/w04$salperobr) # diferencia total
+w04$lngap_perc <-  as.numeric(log(w04$gap_perc))                 # diferencia log
+
+#---Brecha salarial justa
+w04$gap_just   <-  as.numeric(w04$saljusger/w04$saljusobr) # diferencia total
+w04$lngap_just <-  as.numeric(log(w04$gap_just))           # diferencia log
+# meritocracia promedio
+w04$pmerit <- as.numeric((w04$mesfuerzo+w04$mtalento)/2)
+```
+
+```{r}
+stargazer(w04,type = "text",digits = 1)
+```
+
+```{r}
+wide_a<- w01 %>% 
+  left_join(w02,"idencuesta", suffix = c(".w1", ".w2")) 
+
+wide_b <- w03 %>% 
+  left_join(w04,"idencuesta", suffix = c(".w3", ".w4")) 
+   
+wide01 <-  wide_a %>% left_join(wide_b,"idencuesta")
+```
+
+```{r eval=FALSE, include=FALSE}
+sjPlot::view_df(wide01)
+```
+
+```{r}
+sjPlot::sjt.corr(wide01 %>% select(starts_with("ess"),starts_with("lngap_perc")))
+```
+
+
+**save data**
+```{r}
+save(wide01,file = "input/data/proc/wide01.RData")
+```
+
+
+

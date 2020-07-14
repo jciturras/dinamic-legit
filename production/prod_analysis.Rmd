@@ -1,0 +1,131 @@
+---
+title: "Analysis"
+date: "`r format(Sys.time(), '%A %d %B %Y %X')`"
+output:
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float:
+        collapsed: false
+    toc_depth: 2
+    code_folding: "hide"
+editor_options:
+  chunk_output_type: console
+---
+
+```{r eval=FALSE, include=FALSE}
+rmarkdown::render(input = "production/prod_analysis.Rmd",output_format = "html_document",output_dir = "production/");browseURL(url = "production/prod_analysis.html")
+```
+
+```{r include=FALSE}
+knitr::opts_chunk$set(warning = FALSE,message = FALSE, cache = TRUE,results = "hold")
+knitr::opts_knit$set(root.dir = "../")
+options(scipen=999)
+rm(list=ls())
+options(knitr.kable.NA = '')
+```
+
+**libraries**
+```{r}
+library(dplyr)
+library(sjlabelled)
+library(sjPlot)
+library(stargazer)
+library(lavaan)
+library(semPlot)
+```
+
+```{r}
+load(file = "input/data/proc/wide01.RData")
+```
+
+```{r}
+mod01 <- '
+merit.w1=~mesfuerzo.w1+mtalento.w1  # meritocracia como variable latente           
+merit.w2=~mesfuerzo.w2+mtalento.w2  # meritocracia como variable latente           
+merit.w3=~mesfuerzo+mtalento        # meritocracia como variable latente     
+              
+merit.w2~merit.w1+lngap_just.w1
+merit.w3~merit.w2+lngap_just.w2
+
+lngap_just.w2~lngap_just.w1+merit.w1
+lngap_just~lngap_just.w2+merit.w2
+'
+
+m01<- sem(model = mod01,data = wide01, ordered = c("mesfuerzo.w1","mtalento.w1","mesfuerzo.w2","mtalento.w2","mesfuerzo","mtalento"))
+summary(m01, standardized=T)
+```
+
+```{r}
+semPaths(m01,
+         what = "std", 
+         residuals = F,
+         fade=F,
+         nCharNodes = 0,
+         layout = "tree3",
+         rotation = 4,
+         sizeMan = 8,
+         label.scale=F, 
+         intercepts = F,
+         thresholds = F)
+```
+
+```{r}
+mod01 <- "
+merit.w1=~mesfuerzo.w1+mtalento.w1  # meritocracia variable latente
+merit.w2=~mesfuerzo.w2+mtalento.w2  # meritocracia variable latente
+merit.w3=~mesfuerzo+mtalento        # meritocracia variable latente
+
+just.w1=~justeduc.w1+justsalud.w1  # justicia distributiva latente        
+just.w2=~justeduc.w2+justsalud.w2  # justicia distributiva latente        
+just.w3=~justeduc+justsalud        # justicia distributiva latente
+
+merit.w2~merit.w1+just.w1
+merit.w3~merit.w2+just.w2
+
+just.w2~just.w1+merit.w1
+just.w3~just.w2+merit.w2
+"
+m02<- sem(model = mod01,data = wide01)
+summary(m02,standardized=T)
+```
+
+```{r}
+semPaths(m02,
+         what = "std", 
+         residuals = F,
+         fade=F,
+         nCharNodes = 0,
+         layout = "tree2",
+         rotation = 1,
+         sizeMan = 8,
+         label.scale=T)
+```
+
+```{r}
+mod03 <- '
+lngap_perc.w2~lngap_perc.w1+lngap_just.w1
+lngap_perc.w3~lngap_perc.w2+lngap_just.w2
+lngap_perc.w4~lngap_perc.w3+lngap_just.w3
+
+lngap_just.w2~lngap_perc.w1+lngap_just.w1
+lngap_just.w3~lngap_just.w2+lngap_perc.w2
+lngap_just.w4~lngap_just.w3+lngap_perc.w3
+'
+m03<- sem(model = mod03,data = wide01,estimator="MLR")
+summary(m03,standardized=T)
+```
+
+```{r}
+semPaths(m03,
+         what = "std", 
+         residuals = F,
+         fade=F,
+         nCharNodes = 0,
+         layout = "tree2",
+         rotation = 1,
+         label.font =1,
+         sizeMan = 12,
+         label.scale=F)
+```
+
