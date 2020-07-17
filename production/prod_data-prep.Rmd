@@ -78,27 +78,48 @@ sjmisc::find_var(elsoc16,"Salario")
 sjmisc::find_var(elsoc16,"Las personas son")
 sjmisc::find_var(elsoc16,"Justicia")
 sjmisc::find_var(elsoc16,"Estatus")
+sjmisc::find_var(elsoc16,"Nivel")
 ```
 
 ```{r}
 elsoc16[elsoc16==-999] <- NA
 elsoc16[elsoc16==-888] <- NA
 w01 <- elsoc16 %>% select(idencuesta,
+                          "mujer"=m0_sexo,
+                          "edad"=m0_edad,
+                          "educacion"=m01,
                           "ess"=d01_01,
-                          "justpens" = d02_01,
-                          "justeduc" = d02_02,
-                          "justsalud" = d02_03,
-                          "mesfuerzo"= c18_09,
-                          "mtalento" = c18_10,
+                          # "justpens" = d02_01,
+                          # "justeduc" = d02_02,
+                          # "justsalud" = d02_03,
+                          # "mesfuerzo"= c18_09,
+                          # "mtalento" = c18_10,
                           "salperger"= d03_01,
                           "salperobr"= d03_02,
                           "saljusobr"= d04_02 ,
                           "saljusger"= d04_01) %>% 
   mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
   mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
-  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
-  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  | saljusobr>=999999999999999, NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 | saljusger>=999999999999999, NA)) 
+```
 
+```{r}
+summary(w01$salperobr)
+quantile(w01$salperobr,na.rm = T,probs = c(0.75,0.8,0.85,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,1.0))
+summary(w01$salperger)
+quantile(w01$salperger,na.rm = T,probs = c(0.75,0.8,0.85,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,1.0))
+```
+
+```{r}
+summary(w01$saljusobr)
+quantile(w01$saljusobr,na.rm = T,probs = c(0.75,0.8,0.85,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,1.0))
+summary(w01$saljusger)
+quantile(w01$saljusger,na.rm = T,probs = c(0.75,0.8,0.85,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,1.0))
+```
+
+
+```{r}
 #---Brecha salarial percibida
 w01$gap_perc   <-  as.numeric(w01$salperger/w01$salperobr) # diferencia total
 w01$lngap_perc <-  as.numeric(log(w01$gap_perc))                 # diferencia log
@@ -107,11 +128,11 @@ w01$lngap_perc <-  as.numeric(log(w01$gap_perc))                 # diferencia lo
 w01$gap_just   <-  as.numeric(w01$saljusger/w01$saljusobr) # diferencia total
 w01$lngap_just <-  as.numeric(log(w01$gap_just))           # diferencia log
 # meritocracia promedio
-w01$pmerit <- as.numeric((w01$mesfuerzo+w01$mtalento)/2)
+# w01$pmerit <- as.numeric((w01$mesfuerzo+w01$mtalento)/2)
 ```
 
 ```{r}
-stargazer(w01,type = "text",digits = 1)
+stargazer(w01,type = "text",digits = 1,median = T)
 ```
 
 # wave 2017
@@ -120,21 +141,23 @@ stargazer(w01,type = "text",digits = 1)
 elsoc17[elsoc17==-999] <- NA
 elsoc17[elsoc17==-888] <- NA
 w02 <- elsoc17 %>% select(idencuesta,
+                          "mujer"=m0_sexo,
+                          "edad"=m0_edad,
+                          "educacion"=m01,
                           "ess"=d01_01,
-                          "justpens" = d02_01,
-                          "justeduc" = d02_02,
-                          "justsalud"= d02_03,
-                          "mesfuerzo"=c18_09,
-                          "mtalento" =c18_10,
+                          # "justpens" = d02_01,
+                          # "justeduc" = d02_02,
+                          # "justsalud"= d02_03,
+                          # "mesfuerzo"=c18_09,
+                          # "mtalento" =c18_10,
                           "salperger"= d03_01,
                           "salperobr"= d03_02,
                           "saljusobr"= d04_02 ,
                           "saljusger"= d04_01) %>% 
   mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
   mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
-  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
-  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
-
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  | saljusobr>=999999999999999, NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 | saljusger>=999999999999999, NA)) 
 #---Brecha salarial percibida
 w02$gap_perc   <-  as.numeric(w02$salperger/w02$salperobr) # diferencia total
 w02$lngap_perc <-  as.numeric(log(w02$gap_perc))                 # diferencia log
@@ -143,7 +166,7 @@ w02$lngap_perc <-  as.numeric(log(w02$gap_perc))                 # diferencia lo
 w02$gap_just   <-  as.numeric(w02$saljusger/w02$saljusobr) # diferencia total
 w02$lngap_just <-  as.numeric(log(w02$gap_just))                # diferencia log
 # meritocracia promedio
-w02$pmerit <- as.numeric((w02$mesfuerzo+w02$mtalento)/2)
+# w02$pmerit <- as.numeric((w02$mesfuerzo+w02$mtalento)/2)
 ```
 
 ```{r}
@@ -156,20 +179,23 @@ stargazer(w02,type = "text",digits = 1)
 elsoc18[elsoc18==-999] <- NA
 elsoc18[elsoc18==-888] <- NA
 w03 <- elsoc18 %>% select(idencuesta,
+                          "mujer"=m0_sexo,
+                          "edad"=m0_edad,
+                          "educacion"=m01,
                           "ess"=d01_01,
                           "justpens" = d02_01,
                           "justeduc" = d02_02,
                           "justsalud"= d02_01,
-                          "mesfuerzo"= c18_09,
-                          "mtalento" = c18_10,
+                          # "mesfuerzo"= c18_09,
+                          # "mtalento" = c18_10,
                           "salperger"= d03_01,
                           "salperobr"= d03_02,
                           "saljusobr"= d04_02 ,
                           "saljusger"= d04_01) %>% 
   mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
   mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
-  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
-  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  | saljusobr>=999999999999999, NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 | saljusger>=999999999999999, NA)) 
 
 #---Brecha salarial percibida
 w03$gap_perc   <-  as.numeric(w03$salperger/w03$salperobr) # diferencia total
@@ -179,7 +205,7 @@ w03$lngap_perc <-  as.numeric(log(w03$gap_perc))                 # diferencia lo
 w03$gap_just   <-  as.numeric(w03$saljusger/w03$saljusobr) # diferencia total
 w03$lngap_just <-  as.numeric(log(w03$gap_just))           # diferencia log
 # meritocracia promedio
-w03$pmerit <- as.numeric((w03$mesfuerzo+w03$mtalento)/2)
+# w03$pmerit <- as.numeric((w03$mesfuerzo+w03$mtalento)/2)
 ```
 
 ```{r}
@@ -192,20 +218,23 @@ stargazer(w03,type = "text",digits = 1)
 elsoc19[elsoc19==-999] <- NA
 elsoc19[elsoc19==-888] <- NA
 w04 <- elsoc19 %>% select(idencuesta,
+                          "mujer"=m0_sexo,
+                          "edad"=m0_edad,
                           "ess"=d01_01,
-                          "justpens" = d02_01,
-                          "justeduc" = d02_02,
-                          "justsalud"= d02_01,
-                          "mesfuerzo"= c18_09,
-                          "mtalento" = c18_10,
+                          "educacion"=m01,
+                          # "justpens" = d02_01,
+                          # "justeduc" = d02_02,
+                          # "justsalud"= d02_01,
+                          # "mesfuerzo"= c18_09,
+                          # "mtalento" = c18_10,
                           "salperger"= d03_01,
                           "salperobr"= d03_02,
                           "saljusobr"= d04_02 ,
                           "saljusger"= d04_01) %>% 
   mutate(salperobr=replace(salperobr, salperobr <= 40000  | salperobr>= 1000000, NA)) %>%
   mutate(salperger=replace(salperger, salperger <= 250000 | salperger>= 100000001, NA)) %>%
-  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  , NA)) %>%
-  mutate(saljusger=replace(saljusger, saljusger <= 100000 , NA)) %>% na.omit()
+  mutate(saljusobr=replace(saljusobr, saljusobr <= 40000  | saljusobr>=999999999999999, NA)) %>%
+  mutate(saljusger=replace(saljusger, saljusger <= 100000 | saljusger>=999999999999999, NA)) 
 
 #---Brecha salarial percibida
 w04$gap_perc   <-  as.numeric(w04$salperger/w04$salperobr) # diferencia total
@@ -215,11 +244,11 @@ w04$lngap_perc <-  as.numeric(log(w04$gap_perc))                 # diferencia lo
 w04$gap_just   <-  as.numeric(w04$saljusger/w04$saljusobr) # diferencia total
 w04$lngap_just <-  as.numeric(log(w04$gap_just))           # diferencia log
 # meritocracia promedio
-w04$pmerit <- as.numeric((w04$mesfuerzo+w04$mtalento)/2)
+# w04$pmerit <- as.numeric((w04$mesfuerzo+w04$mtalento)/2)
 ```
 
 ```{r}
-stargazer(w04,type = "text",digits = 1)
+stargazer(w04,type = "text",digits = 1,median = T)
 ```
 
 ```{r}
@@ -237,7 +266,11 @@ sjPlot::view_df(wide01)
 ```
 
 ```{r}
-sjPlot::sjt.corr(wide01 %>% select(starts_with("ess"),starts_with("lngap_perc")))
+sjPlot::sjt.corr(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")))
+```
+
+```{r}
+wide01 %>% select(starts_with("gap_")) %>%  stargazer(type = "text",median = T)
 ```
 
 
@@ -246,5 +279,46 @@ sjPlot::sjt.corr(wide01 %>% select(starts_with("ess"),starts_with("lngap_perc"))
 save(wide01,file = "input/data/proc/wide01.RData")
 ```
 
+**Base long**
 
+* Base sin aplicar listwise
+```{r}
+library(datasets)
+library(data.table)
+wide01 <- setDT(wide01)
+
+long01<- melt(wide01, id.vars = "idencuesta",
+              variable.name = "year",
+              measure = patterns("^mujer.","^edad.","^educacion.","^ess.",
+                                 "^salperger.","^salperobr","^saljusobr.","^saljusger.",
+                                 "^gap_perc.","^lngap_perc.","^gap_just.","^lngap_just."),
+              value.name = c("mujer","edad","educacion","ess","salperger","salperobr","saljusobr","saljusger",
+                             "gap_perc","lngap_perc","gap_just","lngap_just"))
+
+long01$year <- car::recode(long01$year,recodes = "1=2016;2=2017;3=2018;4=2019")
+long01a <- long01
+```
+
+```{r}
+save(long01a,file = "input/data/proc/long01a.RData")
+```
+
+* Base con listwise 
+
+```{r}
+long01<- melt(na.omit(wide01), id.vars = "idencuesta",
+              variable.name = "year",
+              measure = patterns("^mujer.","^edad.","^educacion.","^ess.",
+                                 "^salperger.","^salperobr","^saljusobr.","^saljusger.",
+                                 "^gap_perc.","^lngap_perc.","^gap_just.","^lngap_just."),
+              value.name = c("mujer","edad","educacion","ess","salperger","salperobr","saljusobr","saljusger",
+                             "gap_perc","lngap_perc","gap_just","lngap_just"))
+
+long01$year <- car::recode(long01$year,recodes = "1=2016;2=2017;3=2018;4=2019")
+long01b <- long01
+```
+
+```{r}
+save(long01b,file = "input/data/proc/long01b.RData")
+```
 

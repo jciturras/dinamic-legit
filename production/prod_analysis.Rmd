@@ -33,99 +33,352 @@ library(sjPlot)
 library(stargazer)
 library(lavaan)
 library(semPlot)
+library(ggplot2)
+library(knitr)
+library(lme4)
+library(corrplot)
 ```
 
 ```{r}
 load(file = "input/data/proc/wide01.RData")
+load(file = "input/data/proc/long01a.RData") #base sin na.omit()
+load(file = "input/data/proc/long01b.RData") #base con na.omit()
+```
+
+# Muestra
+
+Muestra por año considerando con información en variables de salario
+
+```{r}
+sample01<- long01a %>% group_by(year) %>% na.omit() %>% summarise(n=n())
+```
+
+Muestra longitudinal por año con información completa en variables salario
+
+```{r}
+sample02 <- long01b %>% group_by(year) %>% summarise(n=n()) 
 ```
 
 ```{r}
-mod01 <- '
-merit.w1=~mesfuerzo.w1+mtalento.w1  # meritocracia como variable latente           
-merit.w2=~mesfuerzo.w2+mtalento.w2  # meritocracia como variable latente           
-merit.w3=~mesfuerzo+mtalento        # meritocracia como variable latente     
-              
-merit.w2~merit.w1+lngap_just.w1
-merit.w3~merit.w2+lngap_just.w2
+bind_cols(sample01, sample02) %>% select("Ola"=year, "n1"=n,"n2"=n1) %>% kable()
+```
 
-lngap_just.w2~lngap_just.w1+merit.w1
-lngap_just~lngap_just.w2+merit.w2
+
+# Análisis
+
+## Descriptivos
+
+```{r}
+long01 <- long01b
+```
+
+```{r}
+ds.perobr<- psych::describeBy(x = long01$salperobr,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Obrero")
+```
+
+```{r}
+ds.perger<- psych::describeBy(x = long01$salperger,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max)%>% mutate(ocup="Gerente")
+```
+
+```{r}
+ds.perc<- bind_rows(ds.perobr,ds.perger)
+```
+
+```{r}
+ds.jusobr <- psych::describeBy(x = long01$saljusobr,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Obrero")
+```
+
+```{r}
+ds.jusger <- psych::describeBy(x = long01$saljusger,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Gerente")
+```
+
+```{r}
+ds.just<- bind_rows(ds.jusobr,ds.jusger)
+```
+
+## Plots
+
+### Salario percibido por ocupación
+
+```{r}
+ds.perc01<- ggplot(data=ds.perc, aes(x=reorder(group1, desc(group1)), y=median, fill=ocup)) +
+  geom_bar(position = 'dodge', stat='identity') +
+  geom_text(aes(label=format(median, big.mark = ",", scientific = FALSE), y=0), position=position_dodge(0.9), hjust=-0.25) +
+     theme_bw(base_size = 12) +
+     scale_y_continuous(labels = scales::comma) +
+     ylab('Salario percibido (mediana)') + xlab('Años') +
+     scale_fill_brewer(palette="Paired") +
+     theme(legend.position="top") +
+     labs(fill = " ") +
+    coord_flip()
+ds.perc01
+```
+
+```{r}
+ggsave(ds.perc01,filename = "output/images/ds.perc01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
+```
+
+
+### Salario justo por ocupación
+
+```{r}
+ds.just01<-ggplot(data=ds.just, aes(x=reorder(group1, desc(group1)), y=median, fill=ocup)) +
+  geom_bar(position = 'dodge', stat='identity') +
+  geom_text(aes(label=format(median, big.mark = ",", scientific = FALSE), y=0), position=position_dodge(0.9), hjust=-0.25) +
+     theme_bw(base_size = 12) +
+     scale_y_continuous(labels = scales::comma) +
+     ylab('Salario justo (mediana)') + xlab('Años') +
+     scale_fill_brewer(palette="Paired") +
+     theme(legend.position="top") +
+     labs(fill = " ") +
+     coord_flip()
+ds.perc01
+```
+
+```{r}
+ggsave(ds.just01,filename = "output/images/ds.just01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
+```
+
+### Brecha percibida 
+
+```{r}
+ds.gaper<- psych::describeBy(x = long01$gap_perc,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(brecha="Percibida")
+```
+
+### Brecha justa 
+
+```{r}
+ds.gajust<- psych::describeBy(x = long01$gap_just,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(brecha="Justa")
+```
+
+```{r}
+ds.gaps<- bind_rows(ds.gaper,ds.gajust)
+```
+
+```{r}
+ds.gaps01<-ggplot(data=ds.gaps, aes(x=reorder(group1, desc(group1)), y=median, fill=brecha)) +
+  geom_bar(position = 'dodge', stat='identity') +
+  geom_text(aes(label=format(round(median,digits = 2), big.mark = ",", scientific = FALSE), y=0),     position=position_dodge(0.9), hjust=-0.25) +
+     theme_bw(base_size = 12) +
+     scale_y_continuous(labels = scales::comma) +
+     ylab('Brecha salarial (mediana)') + xlab('Años') +
+     scale_fill_brewer(palette="Paired") +
+     theme(legend.position="top") +
+     labs(fill = " ") +
+     coord_flip()
+ds.gaps01
+```
+
+```{r}
+ggsave(ds.gaps01,filename = "output/images/ds.gaps01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
+```
+
+## Bivariados
+
+```{r}
+cormat<- cor(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")),use = "complete.obs")
+p.mat <- cor.mtest(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")),use = "complete.obs")$p
+
+colnames(cormat) <- c("Just (t1)","Just (t2)","Just (t3)","Just (t4)",
+                      "Perc(t1)","Perc (t2)","Perc (t3)","Perc (t4)")
+
+rownames(cormat) <- c("Justa (t1)","Justa (t2)","Justa (t3)","Justa (t4)",
+                      "Percibida (t1)","Percibida (t2)","Percibida (t3)","Percibida (t4)")
+
+```
+
+```{r}
+library(corrplot)
+col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
+png("output/images/cormat01.png", width = 1920, height = 1100,res = "200")
+corrplot(cormat, method = "color",
+         type = "upper", number.cex = .8,
+         addCoef.col = "black", # Add coefficient of correlation
+         tl.col = "black", tl.srt = 45, # Text label color and rotation
+         # Combine with significance
+         p.mat = p.mat, sig.level = 0.01, insig = "blank", 
+         # hide correlation coefficient on the principal diagonal
+         diag = FALSE)
+dev.off()
+```
+
+```{r}
+sjPlot::sjp.corr(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")))
+```
+
+## Modelos regresión por year
+
+```{r}
+
+m01<- lmer(salperobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
+m02<- lmer(salperger~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
+m03<- lmer(saljusobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
+m04<- lmer(saljusobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
+```
+
+```{r}
+texreg::screenreg(l = list(m01,m02,m03,m04))
+```
+
+```{r}
+plot_model(m01,type = "pred",terms = "year")
+plot_model(m02,type = "pred",terms = "year")
+plot_model(m03,type = "pred",terms = "year")
+plot_model(m04,type = "pred",terms = "year")
+```
+
+```{r}
+m05 <- lmer(gap_perc ~ year + mujer + edad + educacion + ess + (1 | idencuesta),data=long01a)
+m06 <- lmer(gap_just ~ year + mujer + edad + educacion + ess + gap_perc + (1 | idencuesta),data=long01a)
+```
+
+```{r}
+texreg::screenreg(l = list(m05,m06))
+```
+
+```{r}
+plot_model(m05,type = "pred",terms = "year")
+plot_model(m06,type = "pred",terms = "year")
+```
+
+```{r}
+m07<- lmer(lngap_perc~year+mujer+edad+educacion+ess+(1|idencuesta),data=long01a)
+m08<- lmer(lngap_just~year+mujer+edad+educacion+ess+lngap_perc+(1|idencuesta),data=long01a)
+```
+
+```{r}
+plot_model(m07,type = "pred",terms = "year")
+plot_model(m08,type = "pred",terms = "year")
+```
+
+
+## Cross-lagged 
+
+### a. percepción y justificación
+
+
+```{r}
+mod03 <- '
+lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_perc.w3 ~ lngap_perc.w2 + lngap_just.w2 
+lngap_perc.w4 ~ lngap_perc.w3 + lngap_just.w3 
+
+lngap_just.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_just.w3 ~ lngap_just.w2 + lngap_perc.w2 
+lngap_just.w4 ~ lngap_just.w3 + lngap_perc.w3 
+
+lngap_just.w1~~lngap_perc.w1
+lngap_just.w2~~lngap_perc.w2
+lngap_just.w3~~lngap_perc.w3
+lngap_just.w4~~lngap_perc.w4
 '
-
-m01<- sem(model = mod01,data = wide01, ordered = c("mesfuerzo.w1","mtalento.w1","mesfuerzo.w2","mtalento.w2","mesfuerzo","mtalento"))
-summary(m01, standardized=T)
-```
-
-```{r}
-semPaths(m01,
-         what = "std", 
-         residuals = F,
-         fade=F,
-         nCharNodes = 0,
-         layout = "tree3",
-         rotation = 4,
-         sizeMan = 8,
-         label.scale=F, 
-         intercepts = F,
-         thresholds = F)
-```
-
-```{r}
-mod01 <- "
-merit.w1=~mesfuerzo.w1+mtalento.w1  # meritocracia variable latente
-merit.w2=~mesfuerzo.w2+mtalento.w2  # meritocracia variable latente
-merit.w3=~mesfuerzo+mtalento        # meritocracia variable latente
-
-just.w1=~justeduc.w1+justsalud.w1  # justicia distributiva latente        
-just.w2=~justeduc.w2+justsalud.w2  # justicia distributiva latente        
-just.w3=~justeduc+justsalud        # justicia distributiva latente
-
-merit.w2~merit.w1+just.w1
-merit.w3~merit.w2+just.w2
-
-just.w2~just.w1+merit.w1
-just.w3~just.w2+merit.w2
-"
-m02<- sem(model = mod01,data = wide01)
-summary(m02,standardized=T)
-```
-
-```{r}
-semPaths(m02,
-         what = "std", 
-         residuals = F,
-         fade=F,
-         nCharNodes = 0,
-         layout = "tree2",
-         rotation = 1,
-         sizeMan = 8,
-         label.scale=T)
+m03<- sem(model = mod03,data = wide01,estimator="MLR")
 ```
 
 ```{r}
 mod03 <- '
-lngap_perc.w2~lngap_perc.w1+lngap_just.w1
-lngap_perc.w3~lngap_perc.w2+lngap_just.w2
-lngap_perc.w4~lngap_perc.w3+lngap_just.w3
+lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_perc.w3 ~ lngap_perc.w2 + lngap_just.w2 + lngap_perc.w1
+lngap_perc.w4 ~ lngap_perc.w3 + lngap_just.w3 + lngap_perc.w2 + lngap_just.w1
 
-lngap_just.w2~lngap_perc.w1+lngap_just.w1
-lngap_just.w3~lngap_just.w2+lngap_perc.w2
-lngap_just.w4~lngap_just.w3+lngap_perc.w3
+lngap_just.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_just.w3 ~ lngap_just.w2 + lngap_perc.w2 + lngap_just.w1
+lngap_just.w4 ~ lngap_just.w3 + lngap_perc.w3 + lngap_just.w2 + lngap_just.w1
+
+lngap_just.w1~~lngap_perc.w1
+lngap_just.w2~~lngap_perc.w2
+lngap_just.w3~~lngap_perc.w3
+lngap_just.w4~~lngap_perc.w4
 '
 m03<- sem(model = mod03,data = wide01,estimator="MLR")
-summary(m03,standardized=T)
 ```
 
 ```{r}
+summary(m03, fit.measures=TRUE, standardized=TRUE)
+parameterestimates(m03, standardized = T) %>%
+  filter(op == "~~") %>%
+  select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
+```
+
+
+```{r}
+nodeLabels <-c("Percepción (t2)","Percepción (t3)","Percepción (t4)","Justificación (t2)",
+               "Justificación (t3)","Justificación (t4)","Percepción (t1)","Justificación (t1)")
+png("output/images/sempath01.png", width = 1000, height = 500,res = "100")
 semPaths(m03,
-         what = "std", 
+         # what = "std",
          residuals = F,
          fade=F,
          nCharNodes = 0,
-         layout = "tree2",
-         rotation = 1,
-         label.font =1,
-         sizeMan = 12,
+         layout = "tree3",
+         rotation = 2,
+         label.font =6,
+         sizeMan = 15,
+         sizeMan2 = 7,
+         edge.label.cex = 0.75,
+         edge.color = "black",
+         nodeLabels = nodeLabels,
+         edge.width=2,
+         borders =T,
+         centerLevels =T,
          label.scale=F)
+dev.off()
 ```
+
+### b. percepción y justificación con controles
+
+```{r}
+mod04 <- '
+# regresion salario percibido
+lngap_perc.w1~educacion.w1+mujer.w1+edad.w1
+lngap_perc.w2~lngap_perc.w1+lngap_just.w1+ educacion.w2+mujer.w2+edad.w2
+lngap_perc.w3~lngap_perc.w2+lngap_just.w2+ lngap_perc.w1 +educacion.w3+mujer.w3+edad.w3
+lngap_perc.w4~lngap_perc.w3+lngap_just.w3+ lngap_perc.w2 +lngap_perc.w4+educacion.w4+mujer.w4+edad.w4
+
+# regresion salario justo
+lngap_just.w1~educacion.w1+mujer.w1+edad.w1
+lngap_just.w2~lngap_perc.w1+lngap_just.w1+educacion.w2+mujer.w2+edad.w2
+lngap_just.w3~lngap_just.w2+lngap_perc.w2+ lngap_just.w1+educacion.w3+mujer.w3+edad.w3
+lngap_just.w4~lngap_just.w3+lngap_perc.w3+ lngap_just.w2 +lngap_just.w1+educacion.w4+mujer.w4+edad.w4
+
+# correlacion
+lngap_just.w1~~lngap_perc.w1
+lngap_just.w2~~lngap_perc.w2
+lngap_just.w3~~lngap_perc.w3
+lngap_just.w4~~lngap_perc.w4
+'
+m04<- sem(model = mod04,data = wide01,estimator="MLR")
+```
+
+```{r}
+summary(m04, fit.measures=TRUE, standardized=TRUE)
+lavaan::nobs(m04)
+```
+
+```{r}
+vars <- c("lngap_perc.w1","lngap_perc.w2","lngap_perc.w3","lngap_perc.w4","lngap_just.w1","lngap_just.w2","lngap_just.w3","lngap_just.w4")
+parameterestimates(m04,standardized = T) %>% 
+  filter(op == "~",
+         lhs %in% vars,
+         rhs %in% vars) %>%
+  select(lhs,op,rhs,std.all,se,z,pvalue) %>% kable(digits = 3)
+```
+
+```{r}
+jpeg("sempath02.jpg", width = 2000, height = 800)
+semPaths(m04,
+         what = "std", 
+         residuals = F,
+         fade=F,
+         nCharNodes = 1,
+         layout = "tree2",
+         rotation = 2,
+         label.font =1,
+         sizeMan = 5,
+         label.scale=F)
+dev.off()
+```
+
+
+
 
