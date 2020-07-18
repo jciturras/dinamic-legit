@@ -17,20 +17,26 @@ output:
 layout: true
 class: animated, fadeIn
 
+
 ---
 class: slideInRight, center, middle
+
+```{r include=FALSE, cache = FALSE}
+library(RefManageR)
+bib <- ReadBib("input/bib/seminario-elsoc.bib")
+```
 
 # Antecedentes
 
 ---
 
-* El estudio de la percepción y justificación de desigualdad económica empleando mediciones "indirectas" a través de salarios según ocupaciones (Kelley & Evans, 1993; Osberg & Smeeding, 2006)
+* El estudio de la percepción y justificación de desigualdad económica empleando mediciones "indirectas" a través de salarios según ocupaciones `r Cite(bib, c("Kelley1993","Osberg2006"))`
 
-* Estudios transversales han demostrado que la percepción predice fuertemente la justificación de desigualdad (Castillo et al., 2012; Castillo, 2011; Schröder, 2017)
+* Estudios transversales han demostrado que la percepción predice fuertemente la justificación de desigualdad  `r Cite(bib, c("Castillo2011","Castillo2012","Schroder2017_soc_jus"))`
 
-* Evidencia experimental ha evidenciado que la desigualdad percibida incrementa la brecha justa (Stella-Trump, 2017)
+* Evidencia experimental ha evidenciado que la desigualdad percibida incrementa la brecha justa `r Cite(bib, c("Trump2017"))`
 
-* Para el caso de Chile, se ha evidenciado una disminución de las brechas percibidas y justas en 20 años, Pero una persistente asociación positiva entre brecha percibida y justa (Castillo et al., 2019).
+* Para el caso de Chile, se ha evidenciado una disminución de las brechas percibidas y justas en 20 años, Pero una persistente asociación positiva entre brecha percibida y justa `r Cite(bib, c("Castillo-etal-2019"))`
 
 ---
 class: middle, center 
@@ -41,6 +47,8 @@ class: middle, center
 * $H_1$: La percepción de desigualdad presente se asocia positivamente con la justificación de desigualdad presente.   
 
 * $H_2$: La percepción de desigualdad actual influencia la justificación de desigualdad futura. No así la justificación actual con la pecepción de desigualdad futura.
+
+* $H_3$: La influencia de la desigualdad percibida sobre la justificación de desigualdad es moderada por el tiempo. 
  
 ---
 # Datos
@@ -77,15 +85,14 @@ $$\text{Brecha salarial} = \ln\Bigg(\frac{\text{Salario Gerente}}{\text{Salario 
 ---
 # Métodos
 
-* Análisis de regresión panel Cross-lagged. 
+* Análisis de regresión panel Cross-lagged y Modelos Multinivel.
 * Tanto las variables de percepción y de justificación se predicen en función de la medición anterior, además, se estiman "efectos" cruzados entre mediciones.
-.center[ ![:scale 75%](../output/images/sempath01.png) ] 
+.center[ ![:scale 75%](../output/images/sempath01b.png) ] 
 
 [allen2017](https://mikewk.com/clpm.pdf)
-
 ---
 
-class: center, middle
+class: top, middle
 
 ## Resultados 1:
 # Análisis descriptivo
@@ -107,13 +114,26 @@ class: center, middle
 ![:scale 100%](../output/images/cormat01.png)  
 
 ---
-class: center, middle 
+class: top, middle 
 ## Resultados 2:
 # Análisis longitudinal
 ---
-class: bottom, right
+class: top, left
 background-image: url(../output/images/sempath02b.png)  
 background-size: contain
+
+.small[n = 1220]
+---
+class: middle, left
+.left-column[
+## Modelos Multinivel
+![](../output/tables/tablemlm01.png)
+
+]
+.right-column[
+![](../output/images/plotmlm.png) 
+]  
+    
 
 ---
 class: inverse
@@ -123,8 +143,8 @@ class: inverse
 
 * La brecha salarial percibida presente no muestra una asociación fuerte con la brecha justa futura, salvo entre medición 2016 y 2017. 
 
-* ¿De qué manera el tiempo afecta la asociación? (análisis longitudinal multinivel)
-
+* El efecto de la percepción de desigualdad se ve afectado negativamente por el tiempo. La asociación es más débil en los años recientes.
+ 
 ---
 class: center, middle
 
@@ -133,25 +153,20 @@ class: center, middle
 ---
 class: inverse, tiny
 
-# Referencias
-
-Castillo, J. C. (2011). Legitimacy of Inequality in a Highly Unequal Context: Evidence from the Chilean Case. Social Justice Research, 24(4), 314-340. https://doi.org/10.1007/s11211-011-0144-5]]
-
-Castillo, J., Meneses, F., Iturra, J., & Maldonado, L. (2020). Cambios en la percepción y justificación de la desigualdad salarial en Chile. Análisis del año, 149-163.]
-
-Castillo, J., Miranda, D., & Carrasco, D. (2012). Percepción de Desigualdad Económica en Chile: Medición, Diferencias y Determinantes. Psykhe (Santiago), 21(1), 99-114. https://doi.org/10.4067/S0718-22282012000100007]
-
-Kelley, J., & Evans, M. D. R. (1993). The legitimation of inequality: Occupational earnings in nine nations. American Journal of Sociology, 99(1), 75-125.
+```{r echo=FALSE, results='asis'}
+PrintBibliography(bib)
+```
 
 ---
-class: inverse, tiny
+class: center, middle
 
-Osberg, L., & Smeeding, T. (2006). “Fair” Inequality? Attitudes toward Pay Differentials: The United States in Comparative Perspective. American Sociological Review, 71(3), 450-473. https://doi.org/10.1177/000312240607100305]
+.center-align[ 
+Cómo citar:
+> Iturra, J. C., & Castillo, J. C. (2020, July 18). Dinámicas de legitimación: Percepción de desigualdad actual y justificación de desigualdad futura. Retrieved from osf.io/4gyz3
+]
 
-Schröder, M. (2017). Is Income Inequality Related to Tolerance for Inequality? Social Justice Research, 30(1), 23-47. https://doi.org/10.1007/s11211-016-0276-8]
 
-Trump, K. S. (2017). Income Inequality Influences Perceptions of Legitimate Income Differences. British Journal of Political Science, February, 1-24. https://doi.org/10.1017/S0007123416000326]
-
+.center-b[ #[`r  fontawesome::fa(name = "github", fill = "black")` <br> jciturras/dinamic-legit  ](https://github.com/jciturras/dinamic-legit)]
 ---
 class: center, middle
 

@@ -126,10 +126,11 @@ a, a > code {
 }
 .right-column {
   width: 50%;
-  float: left;
+  float: right;
 }
 .pull-left {
   float: left;
+  text-align:right;  
   width: 47%;
 }
 .pull-right {
@@ -211,16 +212,22 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 .medium { font-size: 85%
 }
 
-.small { font-size: 70%
+.small { font-size: 23px;
 }
 
 
 .tiny{ font-size: 30%
 }
 
-
 .red { font-color: #000
 }
 
 
+.center-align {
+  text-align:justify;
+}
+
+.center-b {
+  text-align: center;
+}
 

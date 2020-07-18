@@ -1,8 +1,8 @@
 # Dinámicas de legitimación: Percepción de desigualdad actual y justificación de desigualdad futura
 
-Autores: 
+Autores:
 
 - Julio César Iturra Sanhueza
 - Juan Carlos Castillo"
 
-[Presentación](slides/dinamic-legit_elsoc.html)
+[Presentación](https://jciturras.github.io/dinamic-legit/slides/dinamic-legit_elsoc.html#1)

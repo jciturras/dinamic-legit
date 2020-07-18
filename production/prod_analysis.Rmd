@@ -36,7 +36,9 @@ library(semPlot)
 library(ggplot2)
 library(knitr)
 library(lme4)
+library(mitml) # r2 multinivel
 library(corrplot)
+library(fontawesome)
 ```
 
 ```{r}
@@ -242,62 +244,108 @@ plot_model(m06,type = "pred",terms = "year")
 ```
 
 ```{r}
-m07<- lmer(lngap_perc~year+mujer+edad+educacion+ess+(1|idencuesta),data=long01a)
-m08<- lmer(lngap_just~year+mujer+edad+educacion+ess+lngap_perc+(1|idencuesta),data=long01a)
+long01a$year <- as.numeric(long01a$year)
+# long01a$year <- as.factor(long01a$year)
+long01a$year2 <- as.numeric(long01a$year)^2
+
+m07<- lmer(lngap_perc~year+year2+mujer+edad+educacion+ess+(1|idencuesta),data=long01a)
+m08<- lmer(lngap_just~year+year2+mujer+edad+educacion+ess+lngap_perc + (1 | idencuesta),data=long01a)
+m09<- lmer(lngap_just~year+year2+mujer+edad+educacion+ess+lngap_perc + (1 + lngap_perc | idencuesta),data=long01a)
+m10<- lmer(lngap_just~year+year2+mujer+edad+educacion+ess+lngap_perc*year + (1 + lngap_perc | idencuesta),data=long01a)
 ```
 
 ```{r}
-plot_model(m07,type = "pred",terms = "year")
-plot_model(m08,type = "pred",terms = "year")
+save(m08,m09,m10,file = "output/tables/modmlm01.RData")
 ```
 
+```{r results='asis'}
+coef.names <- c("Intercepto","Año","Año²","mujer","edad","educacion","estatus subjetivo","ln(salario percibido)","Año x Sal perc")
+
+coef.names <- c("Año","Año2","ln(salario percibido)","Año x ln(salper)")
+
+texreg::htmlreg(l = list(m08,m09,m10), 
+                  omit.coef = "(mujer)|(edad)|(educacion)|(ess)|((Intercept))",
+                  custom.coef.names = coef.names, doctype = F,
+                file ="output/tables/tablemlm01.html",caption = "",custom.note = "Controles: Sexo, edad, Nivel educacional y estatus subjetivo",include.aic = F,
+include.loglik = F,
+include.lr = F
+)
+
+# webshot::webshot("output/tables/tablemlm01.html","output/tables/tablemlm01.png")
+```
+
+```{r}
+coefplot::multiplot(m08,m09,m10,innerCI = F,intercept = F)
+```
+
+```{r}
+multilevelR2(m08)
+performance::r2(m08)
+```
+
+```{r}
+plot1<- plot_model(m10,type = "int") + 
+  xlab(label = "Salario percibido")+
+  ylab(label = "Salario justo")+
+  ggtitle(label = "") + 
+  scale_color_discrete("Año",labels = c("1 (2016)", "4 (2019)"))+
+  theme_classic() + 
+  theme(legend.position = "bottom")
+
+plot2<- plot_model(m10,type = "slope",terms = "year") +  
+  xlab(label = "Año")+
+  ylab(label = "Salario justo")+
+  ggtitle(label = "")+
+  facet_grid(labeller = labeller()) +theme_classic()
+
+splot3<- plot_grid(x = list(plot1,plot2),margin = c(1,1,1,1),tags = c("",""))
+
+ggsave(splot3,filename = "output/images/plotmlm.png",
+       device = "png",width = 15,height = 18,dpi = "retina",units = "cm")
+```
+
+
+```{r}
+summary(m08)$coefficients
+```
+
+`r  fontawesome::fa(name = "github", fill = "black")` 
 
 ## Cross-lagged 
 
 ### a. percepción y justificación
 
-
 ```{r}
 mod03 <- '
-lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
-lngap_perc.w3 ~ lngap_perc.w2 + lngap_just.w2 
-lngap_perc.w4 ~ lngap_perc.w3 + lngap_just.w3 
+lngap_perc.w2 ~ lngap_perc.w1 + c12ju*lngap_just.w1 
+lngap_perc.w3 ~ lngap_perc.w2 + c23ju*lngap_just.w2 
+lngap_perc.w4 ~ lngap_perc.w3 + c34ju*lngap_just.w3 +lngap_perc.w2
 
-lngap_just.w2 ~ lngap_perc.w1 + lngap_just.w1
-lngap_just.w3 ~ lngap_just.w2 + lngap_perc.w2 
-lngap_just.w4 ~ lngap_just.w3 + lngap_perc.w3 
+lngap_just.w2 ~ c12pe*lngap_perc.w1 + lngap_just.w1 
+lngap_just.w3 ~ c23pe*lngap_perc.w2 + lngap_just.w2 +	lngap_just.w1
+lngap_just.w4 ~ c34pe*lngap_perc.w3 + lngap_just.w3 +	lngap_just.w2  
 
-lngap_just.w1~~lngap_perc.w1
-lngap_just.w2~~lngap_perc.w2
-lngap_just.w3~~lngap_perc.w3
-lngap_just.w4~~lngap_perc.w4
-'
-m03<- sem(model = mod03,data = wide01,estimator="MLR")
-```
+# lngap_just.w1~~lngap_perc.w1
+# lngap_just.w2~~lngap_perc.w2
+# lngap_just.w3~~lngap_perc.w3
+# lngap_just.w4~~lngap_perc.w4
 
-```{r}
-mod03 <- '
-lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
-lngap_perc.w3 ~ lngap_perc.w2 + lngap_just.w2 + lngap_perc.w1
-lngap_perc.w4 ~ lngap_perc.w3 + lngap_just.w3 + lngap_perc.w2 + lngap_just.w1
-
-lngap_just.w2 ~ lngap_perc.w1 + lngap_just.w1
-lngap_just.w3 ~ lngap_just.w2 + lngap_perc.w2 + lngap_just.w1
-lngap_just.w4 ~ lngap_just.w3 + lngap_perc.w3 + lngap_just.w2 + lngap_just.w1
-
-lngap_just.w1~~lngap_perc.w1
-lngap_just.w2~~lngap_perc.w2
-lngap_just.w3~~lngap_perc.w3
-lngap_just.w4~~lngap_perc.w4
+lngap_perc.w3	~~ lngap_just.w3
+lngap_perc.w2	~~ lngap_just.w2	
 '
 m03<- sem(model = mod03,data = wide01,estimator="MLR")
 ```
 
 ```{r}
 summary(m03, fit.measures=TRUE, standardized=TRUE)
+fitMeasures(m03)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
 parameterestimates(m03, standardized = T) %>%
-  filter(op == "~~") %>%
+  filter(op == "~") %>%
   select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
+```
+
+```{r}
+mod01<- modindices(object = m03)
 ```
 
 
@@ -306,12 +354,12 @@ nodeLabels <-c("Percepción (t2)","Percepción (t3)","Percepción (t4)","Justifi
                "Justificación (t3)","Justificación (t4)","Percepción (t1)","Justificación (t1)")
 png("output/images/sempath01.png", width = 1000, height = 500,res = "100")
 semPaths(m03,
-         # what = "std",
+         what = "std",
          residuals = F,
          fade=F,
          nCharNodes = 0,
-         layout = "tree3",
-         rotation = 2,
+         layout = "tree2",
+         rotation = 1,
          label.font =6,
          sizeMan = 15,
          sizeMan2 = 7,
@@ -343,8 +391,8 @@ lngap_just.w4~lngap_just.w3+lngap_perc.w3+ lngap_just.w2 +lngap_just.w1+educacio
 
 # correlacion
 lngap_just.w1~~lngap_perc.w1
-lngap_just.w2~~lngap_perc.w2
-lngap_just.w3~~lngap_perc.w3
+# lngap_just.w2~~lngap_perc.w2
+# lngap_just.w3~~lngap_perc.w3
 lngap_just.w4~~lngap_perc.w4
 '
 m04<- sem(model = mod04,data = wide01,estimator="MLR")
