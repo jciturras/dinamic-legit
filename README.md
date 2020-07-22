@@ -3,6 +3,6 @@
 Autores:
 
 - Julio César Iturra Sanhueza
-- Juan Carlos Castillo"
+- Juan Carlos Castillo
 
 [Presentación](https://jciturras.github.io/dinamic-legit/slides/dinamic-legit_elsoc.html#1)

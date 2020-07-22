@@ -309,29 +309,57 @@ ggsave(splot3,filename = "output/images/plotmlm.png",
 summary(m08)$coefficients
 ```
 
-`r  fontawesome::fa(name = "github", fill = "black")` 
 
 ## Cross-lagged 
 
 ### a. percepción y justificación
 
 ```{r}
+# Con este modelo hice el esquema y el output.
+mod02 <- '
+lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_perc.w3 ~ lngap_perc.w2 + lngap_just.w2 + lngap_perc.w1
+lngap_perc.w4 ~ lngap_perc.w3 + lngap_just.w3 + lngap_perc.w2 + lngap_just.w1
+
+lngap_just.w2 ~ lngap_perc.w1 + lngap_just.w1
+lngap_just.w3 ~ lngap_just.w2 + lngap_perc.w2 + lngap_just.w1
+lngap_just.w4 ~ lngap_just.w3 + lngap_perc.w3 + lngap_just.w2 + lngap_just.w1
+
+# lngap_just.w1~~lngap_perc.w1
+lngap_just.w2~~lngap_perc.w2
+lngap_just.w3~~lngap_perc.w3
+# lngap_just.w4~~lngap_perc.w4
+'
+m02<- sem(model = mod02,data = wide01,estimator="MLR")
+```
+
+```{r}
+summary(m02, fit.measures=TRUE, standardized=TRUE)
+fitMeasures(m02)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
+parameterestimates(m02, standardized = T) %>%
+  filter(op == "~") %>%
+  select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
+```
+
+```{r}
 mod03 <- '
 lngap_perc.w2 ~ lngap_perc.w1 + c12ju*lngap_just.w1 
-lngap_perc.w3 ~ lngap_perc.w2 + c23ju*lngap_just.w2 
-lngap_perc.w4 ~ lngap_perc.w3 + c34ju*lngap_just.w3 +lngap_perc.w2
+lngap_perc.w3 ~ lngap_perc.w2 + c23ju*lngap_just.w2 + lngap_perc.w1
+lngap_perc.w4 ~ lngap_perc.w3 + c34ju*lngap_just.w3 + lngap_perc.w2 
+#+ lngap_perc.w1
 
 lngap_just.w2 ~ c12pe*lngap_perc.w1 + lngap_just.w1 
 lngap_just.w3 ~ c23pe*lngap_perc.w2 + lngap_just.w2 +	lngap_just.w1
-lngap_just.w4 ~ c34pe*lngap_perc.w3 + lngap_just.w3 +	lngap_just.w2  
+lngap_just.w4 ~ c34pe*lngap_perc.w3 + lngap_just.w3 +	lngap_just.w2 
+#+	lngap_just.w1
 
-# lngap_just.w1~~lngap_perc.w1
-# lngap_just.w2~~lngap_perc.w2
-# lngap_just.w3~~lngap_perc.w3
-# lngap_just.w4~~lngap_perc.w4
+# lngap_just.w1 ~~ lngap_perc.w1
+lngap_just.w2 ~~ lngap_perc.w2
+lngap_just.w3 ~~ lngap_perc.w3
+# lngap_just.w4 ~~ lngap_perc.w4
 
-lngap_perc.w3	~~ lngap_just.w3
-lngap_perc.w2	~~ lngap_just.w2	
+# lngap_perc.w3	~~ lngap_just.w3
+# lngap_perc.w2	~~ lngap_just.w2
 '
 m03<- sem(model = mod03,data = wide01,estimator="MLR")
 ```
@@ -340,7 +368,7 @@ m03<- sem(model = mod03,data = wide01,estimator="MLR")
 summary(m03, fit.measures=TRUE, standardized=TRUE)
 fitMeasures(m03)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
 parameterestimates(m03, standardized = T) %>%
-  filter(op == "~") %>%
+  filter(op %in%  c("~","~~")) %>%
   select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
 ```
 
@@ -354,7 +382,7 @@ nodeLabels <-c("Percepción (t2)","Percepción (t3)","Percepción (t4)","Justifi
                "Justificación (t3)","Justificación (t4)","Percepción (t1)","Justificación (t1)")
 png("output/images/sempath01.png", width = 1000, height = 500,res = "100")
 semPaths(m03,
-         what = "std",
+         # what = "std",
          residuals = F,
          fade=F,
          nCharNodes = 0,
@@ -378,22 +406,22 @@ dev.off()
 ```{r}
 mod04 <- '
 # regresion salario percibido
-lngap_perc.w1~educacion.w1+mujer.w1+edad.w1
-lngap_perc.w2~lngap_perc.w1+lngap_just.w1+ educacion.w2+mujer.w2+edad.w2
-lngap_perc.w3~lngap_perc.w2+lngap_just.w2+ lngap_perc.w1 +educacion.w3+mujer.w3+edad.w3
-lngap_perc.w4~lngap_perc.w3+lngap_just.w3+ lngap_perc.w2 +lngap_perc.w4+educacion.w4+mujer.w4+edad.w4
+#lngap_perc.w1~educacion.w1+mujer.w1+edad.w1
+lngap_perc.w2~lngap_perc.w1+lngap_just.w1 + mujer.w1+edad.w1
+lngap_perc.w3~lngap_perc.w2+lngap_just.w2 + lngap_perc.w1 ++mujer.w1+edad.w1
+lngap_perc.w4~lngap_perc.w3+lngap_just.w3 + lngap_perc.w2 +lngap_perc.w4+mujer.w1+edad.w1
 
 # regresion salario justo
-lngap_just.w1~educacion.w1+mujer.w1+edad.w1
-lngap_just.w2~lngap_perc.w1+lngap_just.w1+educacion.w2+mujer.w2+edad.w2
-lngap_just.w3~lngap_just.w2+lngap_perc.w2+ lngap_just.w1+educacion.w3+mujer.w3+edad.w3
-lngap_just.w4~lngap_just.w3+lngap_perc.w3+ lngap_just.w2 +lngap_just.w1+educacion.w4+mujer.w4+edad.w4
+#lngap_just.w1~educacion.w1+mujer.w1+edad.w1
+lngap_just.w2~lngap_perc.w1+lngap_just.w1+mujer.w1+edad.w1
+lngap_just.w3~lngap_just.w2+lngap_perc.w2+ lngap_just.w1+mujer.w1+edad.w1
+lngap_just.w4~lngap_just.w3+lngap_perc.w3+ lngap_just.w2 +lngap_just.w1+mujer.w1+edad.w1
 
 # correlacion
-lngap_just.w1~~lngap_perc.w1
+# lngap_just.w1~~lngap_perc.w1
 # lngap_just.w2~~lngap_perc.w2
 # lngap_just.w3~~lngap_perc.w3
-lngap_just.w4~~lngap_perc.w4
+# lngap_just.w4~~lngap_perc.w4
 '
 m04<- sem(model = mod04,data = wide01,estimator="MLR")
 ```
