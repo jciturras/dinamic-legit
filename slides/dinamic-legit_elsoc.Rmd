@@ -95,7 +95,7 @@ $$\text{Brecha salarial} = \ln\Bigg(\frac{\text{Salario Gerente}}{\text{Salario 
 
 [allen2017](https://mikewk.com/clpm.pdf)
 ---
-
+ 
 class: top, middle
 
 ## Resultados 1:
@@ -155,7 +155,7 @@ class: center, middle
 # _**Dinámicas de legitimación: Percepción de desigualdad actual y justificación de desigualdad futura**_
 
 ---
-class: inverse, tiny
+class: inverse, tiny 
 
 ```{r echo=FALSE, results='asis'}
 PrintBibliography(bib)
