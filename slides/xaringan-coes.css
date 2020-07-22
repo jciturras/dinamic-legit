@@ -219,7 +219,7 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 .tiny{ font-size: 30%
 }
 
-.red { font-color: #000
+.red { font-color: #000 
 }
 
 
@@ -231,3 +231,24 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
   text-align: center;
 }
 
+
+/* barra progreso */
+.remark-slide-number {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+}
+
+.remark-slide-number .progress-bar-container {
+  position: absolute;
+  bottom: 10;
+  height: 8px;
+  display: block;
+  left: 0;
+  right: 0;
+}
+
+.remark-slide-number .progress-bar {
+  height: 100%;
+  background-color: red;
+}

@@ -11,23 +11,27 @@ output:
       ratio: '16:9'
       countIncrementalSlides: false
       beforeInit: "macros.js"
-    # seal: true # esto omite title slide automática 
+      slideNumberFormat:   |
+        <div class="progress-bar-container">
+          <div class="progress-bar" style="width: calc(%current% / %total% * 100%);">
+          </div>
+        </div>`
+    seal: true # esto omite title slide automática
     css: ["xaringan-coes.css","https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.0/animate.min.css"]
 ---
 layout: true
 class: animated, fadeIn
-
 
 ---
 class: slideInRight, center, middle
 
 ```{r include=FALSE, cache = FALSE}
 library(RefManageR)
-bib <- ReadBib("input/bib/seminario-elsoc.bib")
+bib <- ReadBib("../input/bib/seminario-elsoc.bib")
 ```
 
-# Antecedentes
-
+# Antecedentes 
+ 
 ---
 
 * El estudio de la percepción y justificación de desigualdad económica empleando mediciones "indirectas" a través de salarios según ocupaciones `r Cite(bib, c("Kelley1993","Osberg2006"))`
