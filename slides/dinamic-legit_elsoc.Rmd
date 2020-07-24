@@ -11,7 +11,7 @@ output:
       ratio: '16:9'
       countIncrementalSlides: false
       beforeInit: "macros.js"
-      slideNumberFormat:   |
+      slideNumberFormat: |
         <div class="progress-bar-container">
           <div class="progress-bar" style="width: calc(%current% / %total% * 100%);">
           </div>
@@ -31,15 +31,23 @@ bib <- ReadBib("../input/bib/seminario-elsoc.bib")
 ```
 
 # Antecedentes 
- 
+
 ---
+
+# Legitimidad de la desigualdad
+
+**Legitimación Subjetiva:** Esta dimensión se refiere a la consideración de las **creencias** en sí mismas en el sentido weberiano, pero enfatizando un aspecto central que dice relación con la capacidad de **justificación.** `r Cite(bib, c("Castillo2012-multidimentional"))`
+
+* Lo anterior implica una referencia a estándares normativos de justicia, es decir, una evaluación de **"lo que es"** respecto de **"lo que debería ser"**. `r Cite(bib, c("Castillo2012-multidimentional","Wegener1987"))`
+
+---
+# Evidencia
 
 * El estudio de la percepción y justificación de desigualdad económica empleando mediciones "indirectas" a través de salarios según ocupaciones `r Cite(bib, c("Kelley1993","Osberg2006"))`
 
 * Estudios transversales han demostrado que la percepción predice fuertemente la justificación de desigualdad  `r Cite(bib, c("Castillo2011","Castillo2012","Schroder2017_soc_jus"))`
 
-* Evidencia experimental ha evidenciado que la desigualdad percibida incrementa la brecha justa `r Cite(bib, c("Trump2017"))`
-
+* Evidencia experimental ha demostrado que la desigualdad percibida incrementa la brecha justa `r Cite(bib, c("Trump2017"))`
 * Para el caso de Chile, se ha evidenciado una disminución de las brechas percibidas y justas en 20 años, Pero una persistente asociación positiva entre brecha percibida y justa `r Cite(bib, c("Castillo-etal-2019"))`
 
 ---
@@ -70,7 +78,7 @@ class: middle, center
 * Los resultados presentados corresponden a la base longitudinal (sujetos constantes por cada medición)
 
 ---
-background-image: url(../output/images/items_elsoc.png)  
+background-image: url(../output/images/items_elsoc.png)   
 background-size: contain
 
 # Variables principales
@@ -84,6 +92,7 @@ background-size: contain
 <br>
 <br>
 
+
 $$\text{Brecha salarial} = \ln\Bigg(\frac{\text{Salario Gerente}}{\text{Salario Obrero}}\Bigg)$$
 
 ---
@@ -91,11 +100,9 @@ $$\text{Brecha salarial} = \ln\Bigg(\frac{\text{Salario Gerente}}{\text{Salario 
 
 * Análisis de regresión panel Cross-lagged y Modelos Multinivel.
 * Tanto las variables de percepción y de justificación se predicen en función de la medición anterior, además, se estiman "efectos" cruzados entre mediciones.
-.center[ ![:scale 75%](../output/images/sempath01b.png) ] 
+.center[![:scale 75%](../output/images/sempath01b.png)]   
 
-[allen2017](https://mikewk.com/clpm.pdf)
 ---
- 
 class: top, middle
 
 ## Resultados 1:
@@ -120,13 +127,17 @@ class: center, middle
 ---
 class: top, middle 
 ## Resultados 2:
-# Análisis longitudinal
+# Análisis longitudinal (1)
 ---
 class: top, left
 background-image: url(../output/images/sempath02b.png)  
 background-size: contain
 
 .small[n = 1220]
+---
+class: top, middle 
+## Resultados 3:
+# Análisis longitudinal (2)
 ---
 class: middle, left
 .left-column[
@@ -147,7 +158,9 @@ class: inverse
 
 * La brecha salarial percibida presente no muestra una asociación fuerte con la brecha justa futura, salvo entre medición 2016 y 2017. 
 
-* El efecto de la percepción de desigualdad se ve afectado negativamente por el tiempo. La asociación es más débil en los años recientes.
+* El transcurso del tiempo muestra una asociación no lineal sobre la justificación.
+
+* La asociación entre percepción y justificiación se ve afectado negativamente por el tiempo. La asociación se vuelve más débil en los años recientes.
  
 ---
 class: center, middle
@@ -158,9 +171,15 @@ class: center, middle
 class: inverse, tiny 
 
 ```{r echo=FALSE, results='asis'}
-PrintBibliography(bib)
+PrintBibliography(bib, start = 1, end = 4)
 ```
 
+---
+class: inverse, tiny 
+
+```{r echo=FALSE, results='asis'}
+PrintBibliography(bib, start = 5, end = 9)
+```
 ---
 class: center, middle
 

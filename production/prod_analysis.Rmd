@@ -303,7 +303,7 @@ splot3<- plot_grid(x = list(plot1,plot2),margin = c(1,1,1,1),tags = c("",""))
 ggsave(splot3,filename = "output/images/plotmlm.png",
        device = "png",width = 15,height = 18,dpi = "retina",units = "cm")
 ```
-
+  
 
 ```{r}
 summary(m08)$coefficients
@@ -343,20 +343,20 @@ parameterestimates(m02, standardized = T) %>%
 
 ```{r}
 mod03 <- '
-lngap_perc.w2 ~ lngap_perc.w1 + c12ju*lngap_just.w1 
-lngap_perc.w3 ~ lngap_perc.w2 + c23ju*lngap_just.w2 + lngap_perc.w1
-lngap_perc.w4 ~ lngap_perc.w3 + c34ju*lngap_just.w3 + lngap_perc.w2 
+lngap_perc.w2 ~ per12*lngap_perc.w1 + x12ju*lngap_just.w1 
+lngap_perc.w3 ~ per23*lngap_perc.w2 + x23ju*lngap_just.w2 + lngap_perc.w1
+lngap_perc.w4 ~ per34*lngap_perc.w3 + x34ju*lngap_just.w3 + lngap_perc.w2
 #+ lngap_perc.w1
 
-lngap_just.w2 ~ c12pe*lngap_perc.w1 + lngap_just.w1 
-lngap_just.w3 ~ c23pe*lngap_perc.w2 + lngap_just.w2 +	lngap_just.w1
-lngap_just.w4 ~ c34pe*lngap_perc.w3 + lngap_just.w3 +	lngap_just.w2 
+lngap_just.w2 ~ x12pe*lngap_perc.w1 + jus12*lngap_just.w1 
+lngap_just.w3 ~ x23pe*lngap_perc.w2 + jus23*lngap_just.w2 +	lngap_just.w1
+# lngap_just.w4 ~ x34pe*lngap_perc.w3 + jus34*lngap_just.w3 +	lngap_just.w2 
 #+	lngap_just.w1
 
-# lngap_just.w1 ~~ lngap_perc.w1
-lngap_just.w2 ~~ lngap_perc.w2
-lngap_just.w3 ~~ lngap_perc.w3
-# lngap_just.w4 ~~ lngap_perc.w4
+# lngap_just.w1 ~~ corw1*lngap_perc.w1
+# lngap_just.w2 ~~ corw2*lngap_p erc.w2
+# lngap_just.w3 ~~ corw3*lngap_perc.w3
+# lngap_just.w4 ~~ corw4*lngap_perc.w4
 
 # lngap_perc.w3	~~ lngap_just.w3
 # lngap_perc.w2	~~ lngap_just.w2
@@ -369,8 +369,19 @@ summary(m03, fit.measures=TRUE, standardized=TRUE)
 fitMeasures(m03)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
 parameterestimates(m03, standardized = T) %>%
   filter(op %in%  c("~","~~")) %>%
-  select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
+  select(lhs, op, rhs, label,std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
 ```
+
+```{r}
+parameterestimates(m03, standardized = T) %>%
+  select(lhs, op, rhs, label,std.all, se, z, pvalue) %>%
+  filter(op %in%  c("~","~~") & label %in% c("per12","per23","per34", # autoregressive
+                                             "x12ju","x23ju","x34ju", # cross per~jus
+                                             "x12pe","x23pe","x34pe", # cross jus~per
+                                             "corw1","corw2","corw3","corw4")) %>% # correlations within wave 
+  xlsx::write.xlsx(file = "output/images/params.xlsx",)
+```
+
 
 ```{r}
 mod01<- modindices(object = m03)

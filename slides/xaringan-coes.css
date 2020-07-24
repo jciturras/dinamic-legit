@@ -234,14 +234,12 @@ table.dataTable.hover tbody tr:hover, table.dataTable.display tbody tr:hover {
 
 /* barra progreso */
 .remark-slide-number {
-  position: fixed;
-  top: 0px;
-  left: 0px;
+  position: inherit;
 }
 
 .remark-slide-number .progress-bar-container {
   position: absolute;
-  bottom: 10;
+  bottom: 0;
   height: 8px;
   display: block;
   left: 0;
