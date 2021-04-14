@@ -13,11 +13,11 @@ editor_options:
   chunk_output_type: console
 ---
 
-```{r eval=FALSE, include=FALSE}
+```{r remedy01, eval=FALSE, include=FALSE}
 rmarkdown::render(input = "production/prod_analysis.Rmd",output_format = "html_document",output_dir = "production/");browseURL(url = "production/prod_analysis.html")
 ```
 
-```{r include=FALSE}
+```{r remedy02, include=FALSE}
 knitr::opts_chunk$set(warning = FALSE,message = FALSE, cache = TRUE,results = "hold")
 knitr::opts_knit$set(root.dir = "../")
 options(scipen=999)
@@ -26,7 +26,7 @@ options(knitr.kable.NA = '')
 ```
 
 **libraries**
-```{r}
+```{r remedy03}
 library(dplyr)
 library(sjlabelled)
 library(sjPlot)
@@ -41,27 +41,28 @@ library(corrplot)
 library(fontawesome)
 ```
 
-```{r}
+```{r remedy04}
 load(file = "input/data/proc/wide01.RData")
 load(file = "input/data/proc/long01a.RData") #base sin na.omit()
 load(file = "input/data/proc/long01b.RData") #base con na.omit()
 ```
 
+
 # Muestra
 
 Muestra por año considerando con información en variables de salario
 
-```{r}
+```{r remedy05}
 sample01<- long01a %>% group_by(year) %>% na.omit() %>% summarise(n=n())
 ```
 
 Muestra longitudinal por año con información completa en variables salario
 
-```{r}
+```{r remedy06}
 sample02 <- long01b %>% group_by(year) %>% summarise(n=n()) 
 ```
 
-```{r}
+```{r remedy07}
 bind_cols(sample01, sample02) %>% select("Ola"=year, "n1"=n,"n2"=n1) %>% kable()
 ```
 
@@ -70,31 +71,31 @@ bind_cols(sample01, sample02) %>% select("Ola"=year, "n1"=n,"n2"=n1) %>% kable()
 
 ## Descriptivos
 
-```{r}
+```{r remedy08}
 long01 <- long01b
 ```
 
-```{r}
+```{r remedy09}
 ds.perobr<- psych::describeBy(x = long01$salperobr,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Obrero")
 ```
 
-```{r}
+```{r remedy10}
 ds.perger<- psych::describeBy(x = long01$salperger,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max)%>% mutate(ocup="Gerente")
 ```
 
-```{r}
+```{r remedy11}
 ds.perc<- bind_rows(ds.perobr,ds.perger)
 ```
 
-```{r}
+```{r remedy12}
 ds.jusobr <- psych::describeBy(x = long01$saljusobr,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Obrero")
 ```
 
-```{r}
+```{r remedy13}
 ds.jusger <- psych::describeBy(x = long01$saljusger,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(ocup="Gerente")
 ```
 
-```{r}
+```{r remedy14}
 ds.just<- bind_rows(ds.jusobr,ds.jusger)
 ```
 
@@ -102,7 +103,7 @@ ds.just<- bind_rows(ds.jusobr,ds.jusger)
 
 ### Salario percibido por ocupación
 
-```{r}
+```{r remedy15}
 ds.perc01<- ggplot(data=ds.perc, aes(x=reorder(group1, desc(group1)), y=median, fill=ocup)) +
   geom_bar(position = 'dodge', stat='identity') +
   geom_text(aes(label=format(median, big.mark = ",", scientific = FALSE), y=0), position=position_dodge(0.9), hjust=-0.25) +
@@ -116,14 +117,14 @@ ds.perc01<- ggplot(data=ds.perc, aes(x=reorder(group1, desc(group1)), y=median, 
 ds.perc01
 ```
 
-```{r}
+```{r remedy16}
 ggsave(ds.perc01,filename = "output/images/ds.perc01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
 ```
 
 
 ### Salario justo por ocupación
 
-```{r}
+```{r remedy17}
 ds.just01<-ggplot(data=ds.just, aes(x=reorder(group1, desc(group1)), y=median, fill=ocup)) +
   geom_bar(position = 'dodge', stat='identity') +
   geom_text(aes(label=format(median, big.mark = ",", scientific = FALSE), y=0), position=position_dodge(0.9), hjust=-0.25) +
@@ -137,27 +138,27 @@ ds.just01<-ggplot(data=ds.just, aes(x=reorder(group1, desc(group1)), y=median, f
 ds.perc01
 ```
 
-```{r}
+```{r remedy18}
 ggsave(ds.just01,filename = "output/images/ds.just01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
 ```
 
 ### Brecha percibida 
 
-```{r}
+```{r remedy19}
 ds.gaper<- psych::describeBy(x = long01$gap_perc,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(brecha="Percibida")
 ```
 
 ### Brecha justa 
 
-```{r}
+```{r remedy20}
 ds.gajust<- psych::describeBy(x = long01$gap_just,group = long01$year,mat = T) %>% select(group1,n,mean,se,median,min,max) %>% mutate(brecha="Justa")
 ```
 
-```{r}
+```{r remedy21}
 ds.gaps<- bind_rows(ds.gaper,ds.gajust)
 ```
 
-```{r}
+```{r remedy22}
 ds.gaps01<-ggplot(data=ds.gaps, aes(x=reorder(group1, desc(group1)), y=median, fill=brecha)) +
   geom_bar(position = 'dodge', stat='identity') +
   geom_text(aes(label=format(round(median,digits = 2), big.mark = ",", scientific = FALSE), y=0),     position=position_dodge(0.9), hjust=-0.25) +
@@ -171,13 +172,13 @@ ds.gaps01<-ggplot(data=ds.gaps, aes(x=reorder(group1, desc(group1)), y=median, f
 ds.gaps01
 ```
 
-```{r}
+```{r remedy23}
 ggsave(ds.gaps01,filename = "output/images/ds.gaps01.png",device = "png",width = 30,height = 15,dpi = "retina",units = "cm")
 ```
 
 ## Bivariados
 
-```{r}
+```{r remedy24}
 cormat<- cor(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")),use = "complete.obs")
 p.mat <- cor.mtest(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")),use = "complete.obs")$p
 
@@ -189,7 +190,7 @@ rownames(cormat) <- c("Justa (t1)","Justa (t2)","Justa (t3)","Justa (t4)",
 
 ```
 
-```{r}
+```{r remedy25}
 library(corrplot)
 col <- colorRampPalette(c("#BB4444", "#EE9988", "#FFFFFF", "#77AADD", "#4477AA"))
 png("output/images/cormat01.png", width = 1920, height = 1100,res = "200")
@@ -204,13 +205,13 @@ corrplot(cormat, method = "color",
 dev.off()
 ```
 
-```{r}
+```{r remedy26}
 sjPlot::sjp.corr(wide01 %>% select(starts_with("lngap_just"),starts_with("lngap_perc")))
 ```
 
 ## Modelos regresión por year
 
-```{r}
+```{r remedy27}
 
 m01<- lmer(salperobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
 m02<- lmer(salperger~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
@@ -218,32 +219,32 @@ m03<- lmer(saljusobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
 m04<- lmer(saljusobr~year+mujer+edad+educacion+ess+(1 |idencuesta),data=long01a)
 ```
 
-```{r}
+```{r remedy28}
 texreg::screenreg(l = list(m01,m02,m03,m04))
 ```
 
-```{r}
+```{r remedy29}
 plot_model(m01,type = "pred",terms = "year")
 plot_model(m02,type = "pred",terms = "year")
 plot_model(m03,type = "pred",terms = "year")
 plot_model(m04,type = "pred",terms = "year")
 ```
 
-```{r}
+```{r remedy30}
 m05 <- lmer(gap_perc ~ year + mujer + edad + educacion + ess + (1 | idencuesta),data=long01a)
 m06 <- lmer(gap_just ~ year + mujer + edad + educacion + ess + gap_perc + (1 | idencuesta),data=long01a)
 ```
 
-```{r}
+```{r remedy31}
 texreg::screenreg(l = list(m05,m06))
 ```
 
-```{r}
+```{r remedy32}
 plot_model(m05,type = "pred",terms = "year")
 plot_model(m06,type = "pred",terms = "year")
 ```
 
-```{r}
+```{r remedy33}
 long01a$year <- as.numeric(long01a$year)
 # long01a$year <- as.factor(long01a$year)
 long01a$year2 <- as.numeric(long01a$year)^2
@@ -254,11 +255,11 @@ m09<- lmer(lngap_just~year+year2+mujer+edad+educacion+ess+lngap_perc + (1 + lnga
 m10<- lmer(lngap_just~year+year2+mujer+edad+educacion+ess+lngap_perc*year + (1 + lngap_perc | idencuesta),data=long01a)
 ```
 
-```{r}
+```{r remedy34}
 save(m08,m09,m10,file = "output/tables/modmlm01.RData")
 ```
 
-```{r results='asis'}
+```{r remedy35, results='asis'}
 coef.names <- c("Intercepto","Año","Año²","mujer","edad","educacion","estatus subjetivo","ln(salario percibido)","Año x Sal perc")
 
 coef.names <- c("Año","Año2","ln(salario percibido)","Año x ln(salper)")
@@ -274,16 +275,16 @@ include.lr = F
 # webshot::webshot("output/tables/tablemlm01.html","output/tables/tablemlm01.png")
 ```
 
-```{r}
+```{r remedy36}
 coefplot::multiplot(m08,m09,m10,innerCI = F,intercept = F)
 ```
 
-```{r}
+```{r remedy37}
 multilevelR2(m08)
 performance::r2(m08)
 ```
 
-```{r}
+```{r remedy38}
 plot1<- plot_model(m10,type = "int") + 
   xlab(label = "Salario percibido")+
   ylab(label = "Salario justo")+
@@ -305,7 +306,7 @@ ggsave(splot3,filename = "output/images/plotmlm.png",
 ```
   
 
-```{r}
+```{r remedy39}
 summary(m08)$coefficients
 ```
 
@@ -314,7 +315,7 @@ summary(m08)$coefficients
 
 ### a. percepción y justificación
 
-```{r}
+```{r remedy40}
 # Con este modelo hice el esquema y el output.
 mod02 <- '
 lngap_perc.w2 ~ lngap_perc.w1 + lngap_just.w1
@@ -333,7 +334,7 @@ lngap_just.w3~~lngap_perc.w3
 m02<- sem(model = mod02,data = wide01,estimator="MLR")
 ```
 
-```{r}
+```{r remedy41}
 summary(m02, fit.measures=TRUE, standardized=TRUE)
 fitMeasures(m02)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
 parameterestimates(m02, standardized = T) %>%
@@ -341,7 +342,7 @@ parameterestimates(m02, standardized = T) %>%
   select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
 ```
 
-```{r}
+```{r remedy42}
 mod03 <- '
 lngap_perc.w2 ~ per12*lngap_perc.w1 + x12ju*lngap_just.w1 
 lngap_perc.w3 ~ per23*lngap_perc.w2 + x23ju*lngap_just.w2 + lngap_perc.w1
@@ -364,7 +365,7 @@ lngap_just.w3 ~ x23pe*lngap_perc.w2 + jus23*lngap_just.w2 +	lngap_just.w1
 m03<- sem(model = mod03,data = wide01,estimator="MLR")
 ```
 
-```{r}
+```{r remedy43}
 summary(m03, fit.measures=TRUE, standardized=TRUE)
 fitMeasures(m03)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
 parameterestimates(m03, standardized = T) %>%
@@ -372,7 +373,7 @@ parameterestimates(m03, standardized = T) %>%
   select(lhs, op, rhs, label,std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
 ```
 
-```{r}
+```{r remedy44}
 parameterestimates(m03, standardized = T) %>%
   select(lhs, op, rhs, label,std.all, se, z, pvalue) %>%
   filter(op %in%  c("~","~~") & label %in% c("per12","per23","per34", # autoregressive
@@ -383,12 +384,12 @@ parameterestimates(m03, standardized = T) %>%
 ```
 
 
-```{r}
+```{r remedy45}
 mod01<- modindices(object = m03)
 ```
 
 
-```{r}
+```{r remedy46}
 nodeLabels <-c("Percepción (t2)","Percepción (t3)","Percepción (t4)","Justificación (t2)",
                "Justificación (t3)","Justificación (t4)","Percepción (t1)","Justificación (t1)")
 png("output/images/sempath01.png", width = 1000, height = 500,res = "100")
@@ -412,9 +413,39 @@ semPaths(m03,
 dev.off()
 ```
 
+## Parámetros fijos a 1
+
+```{r remedy47}
+# Con este modelo hice el esquema y el output.
+mod02.a <- '
+lngap_perc.w2 ~ cros1*lngap_just.w1 + auto1*lngap_perc.w1 
+lngap_perc.w3 ~ cros1*lngap_just.w2 + auto1*lngap_perc.w2  + lngap_perc.w1
+lngap_perc.w4 ~ cros1*lngap_just.w3 + auto1*lngap_perc.w3  + lngap_perc.w2 + lngap_just.w1
+
+lngap_just.w2 ~ cros2*lngap_perc.w1 + lngap_just.w1
+lngap_just.w3 ~ cros2*lngap_perc.w2 + lngap_just.w2 + lngap_just.w1
+lngap_just.w4 ~ cros2*lngap_perc.w3 + lngap_just.w3 + lngap_just.w2 + lngap_just.w1
+
+lngap_just.w1~~lngap_perc.w1
+lngap_just.w2~~lngap_perc.w2
+lngap_just.w3~~lngap_perc.w3
+# lngap_just.w4~~lngap_perc.w4
+'
+m02.a<- sem(model = mod02.a,data = wide01,estimator="MLR")
+```
+
+```{r remedy48}
+summary(m02.a, fit.measures=TRUE, standardized=TRUE)
+fitMeasures(m02.a)[c("chisq.scaled","df.scaled","cfi.robust","rmsea.robust")]
+parameterestimates(m02.a, standardized = T) %>%
+  filter(op %in%  c("~"), lhs  %in%  c("lngap_just.w2","lngap_just.w3","lngap_just.w4") ) %>%
+  select(lhs, op, rhs, std.all, se, z, pvalue) %>% kable(digits = 3,format = "markdown")
+```
+
+
 ### b. percepción y justificación con controles
 
-```{r}
+```{r remedy49}
 mod04 <- '
 # regresion salario percibido
 #lngap_perc.w1~educacion.w1+mujer.w1+edad.w1
@@ -437,12 +468,12 @@ lngap_just.w4~lngap_just.w3+lngap_perc.w3+ lngap_just.w2 +lngap_just.w1+mujer.w1
 m04<- sem(model = mod04,data = wide01,estimator="MLR")
 ```
 
-```{r}
+```{r remedy50}
 summary(m04, fit.measures=TRUE, standardized=TRUE)
 lavaan::nobs(m04)
 ```
 
-```{r}
+```{r remedy51}
 vars <- c("lngap_perc.w1","lngap_perc.w2","lngap_perc.w3","lngap_perc.w4","lngap_just.w1","lngap_just.w2","lngap_just.w3","lngap_just.w4")
 parameterestimates(m04,standardized = T) %>% 
   filter(op == "~",
@@ -451,7 +482,7 @@ parameterestimates(m04,standardized = T) %>%
   select(lhs,op,rhs,std.all,se,z,pvalue) %>% kable(digits = 3)
 ```
 
-```{r}
+```{r remedy52}
 jpeg("sempath02.jpg", width = 2000, height = 800)
 semPaths(m04,
          what = "std", 
@@ -464,6 +495,28 @@ semPaths(m04,
          sizeMan = 5,
          label.scale=F)
 dev.off()
+```
+
+
+```{r remedy53}
+library(hrbrthemes)
+
+
+
+psych::describeBy(x = long01b$ess,group = long01b$year)
+
+long01b1 <- long01a %>% select(year,ess) %>% filter(year==2016)
+long01b2 <- long01a %>% select(year,ess) %>% filter(year==2017)
+long01b3 <- long01a %>% select(year,ess) %>% filter(year==2018)
+long01b4 <- long01a %>% select(year,ess) %>% filter(year==2019)
+
+plot01<- plot_frq(data = long01b1$ess,show.prc = T,show.n = F)
+plot02<- plot_frq(data = long01b2$ess,show.prc = T,show.n = F)
+plot03<- plot_frq(data = long01b3$ess,show.prc = T,show.n = F)
+plot04<- plot_frq(data = long01b4$ess,show.prc = T,show.n = F)
+
+
+plot_grid(list(plot01,plot02,plot03,plot04))
 ```
 
 
